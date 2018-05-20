@@ -14,22 +14,6 @@ image = image.resize((W,H))
 image = np.array(image)
 print(image.shape)
 
-"""
-dock local: x,y
-(440,100) to (570,410)
-"""
-# Positive Sample
-# prepare the duck Img array
-# 130 * 310
-duck_array = np.zeros((int(310/2), int(130/2), 3), dtype=np.uint8)
-
-for i in range(int(310/2)): # H
-    for j in range(int(130/2)): # W
-        duck_array[i][j] = image[i+int(100/2)][j+int(440/2)]
-
-print("Positive Sample:",duck_array.shape)
-solve_Img = Image.fromarray(duck_array, mode="RGB")
-solve_Img.save("duck_crop.jpg")
 
 '''
 # parameter:
@@ -37,14 +21,44 @@ image                   the background image by numpy_array
 TL_local_tuple          (x1,y1) the location of Top Left Corner
 LR_local_tuple          (x2,y2) the location of Lower Right Corner
 '''
-def sample_crop(Bg_image_array, TL_local_tuple, LR_local_tuple):
+def Sample_Crop(Bg_image_array, TL_local_tuple, LR_local_tuple):
     (x1,y1) = TL_local_tuple
     (x2,y2) = LR_local_tuple
-    
-    return image
+    x1 = int(x1)
+    x2 = int(x2)
+    y1 = int(y1)
+    y2 = int(y2)
+    image_crop_H = y2 - y1
+    image_crop_W = x2 - x1
+    sample_array = np.zeros((image_crop_H, image_crop_W, Bg_image_array.shape[2]), dtype=np.uint8)
+    for i in range(image_crop_H): # H
+        for j in range(image_crop_W): # W
+            sample_array[i][j] = Bg_image_array[i+y1][j+x1]
+    return sample_array
+
+"""
+dock local: x,y
+(440,100) to (570,410)
+"""
+# Positive Sample
+# prepare the duck Img array
+# 130 * 310
+duck_array = Sample_Crop(image, (440/2,100/2),(570/2,410/2))
+
+'''
+Raplace
+duck_array = np.zeros((int(310/2), int(130/2), 3), dtype=np.uint8)
+
+for i in range(int(310/2)): # H
+    for j in range(int(130/2)): # W
+        duck_array[i][j] = image[i+int(100/2)][j+int(440/2)]
+'''
+
+print("Positive Sample:",duck_array.shape)
+solve_Img = Image.fromarray(duck_array, mode="RGB")
+solve_Img.save("duck_crop.jpg")
 
 
-print("crop")
 """
 sky local: x,y
 (50,20) to (200,110)
@@ -147,5 +161,4 @@ print(r1,r2)
 
 # 看每一個pixel比較像背景還是花
 # 每個格子 分成16個格子 在針對每一個格子做運算 每一個格子分別當做一個人考了27個科目
-
 """
