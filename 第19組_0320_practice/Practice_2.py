@@ -3,7 +3,7 @@
 """
 Created on Tue Mar 20 12:51:35 2018
 
-@author: shiweiqiang Econ4A 403574063 Group19
+@author: shiweiqiang Econ4A Group19
 """
 import os
 import numpy as np

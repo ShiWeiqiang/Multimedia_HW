@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 def mask_inrange(image ,lower, upper):
     # create 3 channels masks
     for c in range(3):
-        tmp_m = (image[:, :, c] >= lower[c]) & (image[:, :, c] < upper[c])
+        tmp_m = (image[:, :, c] >= lower[c]) & (image[:, :, c] <= upper[c])
         if c == 0:
             m = tmp_m
         else:
@@ -21,11 +21,13 @@ Bins = 5
 # imp
 image = io.imread("duck.jpg")
 
+'''
 # create the graph
 for i, col in enumerate(color):
     histr, num = np.histogram(image[:, :, i], Bins)
     plt.bar(num[:-1], histr, width = 10, color=col)
     # plt.show()
+'''
 
 # 3 cell [R,G,B] lower, [R,G,B] upper
 # define the mask -->  color Range

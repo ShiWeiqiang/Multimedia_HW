@@ -2,7 +2,7 @@
 """
 Created on Mon Apr 23 10:07:14 2018
 
-@author: Shi Weiqiang Econ4A 403574063 Group_19
+@author: Shi Weiqiang Econ4A Group_19
 """
 
 import numpy

@@ -3,7 +3,7 @@
 """
 Created on Mon Mar 19 12:29:42 2018
 
-@author: shiweiqiang 403574063 Econ_4_A
+@author: shiweiqiang
 """
 import os
 import glob

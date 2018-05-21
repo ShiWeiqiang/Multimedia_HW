@@ -66,7 +66,7 @@ def Sample_Crop(Bg_image_array, TL_local_tuple, LR_local_tuple):
     y2 = int(y2)
     image_crop_H = y2 - y1
     image_crop_W = x2 - x1
-    sample_array = np.zeros((image_crop_H, image_crop_W, Bg_image_array.shape[2]), dtype=np.float32)
+    sample_array = np.zeros((image_crop_H, image_crop_W, Bg_image_array.shape[2]), dtype=np.int8)
     for i in range(image_crop_H): # H
         for j in range(image_crop_W): # W
             sample_array[i][j] = Bg_image_array[i+y1][j+x1]
