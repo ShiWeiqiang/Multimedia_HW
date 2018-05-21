@@ -9,6 +9,7 @@ import itertools
 import numpy as np
 from scipy.stats import multivariate_normal
 from PIL import Image
+from skimage import io
 from matplotlib import pyplot as plt
 
 # Load image
@@ -44,15 +45,16 @@ print(image.shape)
 '''
 
 # Resize img to speedup
-H = int((Imglist[0].shape[0]) / 2)
-W = int((Imglist[0].shape[1]) / 2)
+H = int((Imglist[0].shape[0]))
+W = int((Imglist[0].shape[1]))
+"""
 Imglist = dataset_files("originals/")
 for i in range(N):
     Imglist[i] = Image.open(Imglist[i])
     Imglist[i] = Imglist[i].resize((W,H))
     Imglist[i] = np.array(Imglist[i])
     print("Resize Image shape ",i+1,":",Imglist[i].shape)
-
+"""
 
 # Crop img
 def Sample_Crop(Bg_image_array, TL_local_tuple, LR_local_tuple):
@@ -64,7 +66,7 @@ def Sample_Crop(Bg_image_array, TL_local_tuple, LR_local_tuple):
     y2 = int(y2)
     image_crop_H = y2 - y1
     image_crop_W = x2 - x1
-    sample_array = np.zeros((image_crop_H, image_crop_W, Bg_image_array.shape[2]), dtype=np.uint8)
+    sample_array = np.zeros((image_crop_H, image_crop_W, Bg_image_array.shape[2]), dtype=np.float32)
     for i in range(image_crop_H): # H
         for j in range(image_crop_W): # W
             sample_array[i][j] = Bg_image_array[i+y1][j+x1]
@@ -73,8 +75,8 @@ def Sample_Crop(Bg_image_array, TL_local_tuple, LR_local_tuple):
 
 
 
-
-# Method 1
+"""
+# Method 1-----------------------------------------------
 minion_sample_head = Sample_Crop(Imglist[0], (70/2,367/2), (138/2,448/2))
 print("Positive Sample:",minion_sample_head.shape)
 solve_Img = Image.fromarray(minion_sample_head, mode="RGB")
@@ -112,8 +114,8 @@ cov_body = np.diag(np.diag(tmp2))
 tmp3 = np.cov(trainN_Bg,rowvar=False)
 cov_bg = np.diag(np.diag(tmp3))
 
-image_mark_minion = np.zeros(Imglist[0].shape, dtype=np.uint8)
-Imglist_output = Imglist
+# image_mark_minion[i] = np.zeros(Imglist[0].shape, dtype=np.uint8)
+Imglist_output = Imglist.copy()
 
 for n in range(N):
     for i in range(H): # H
@@ -123,17 +125,86 @@ for n in range(N):
             r3 = multivariate_normal.pdf(Imglist[n][i, j, :], trainN_Bg.mean(axis=0), cov_bg, allow_singular=True)
 
             if ((r1 > r3) or (r2 > r3)): # minions
-                image_mark_minion[i, j, :] = (255, 255, 255)
+                Imglist_output[n][i, j, :] = (255, 255, 255)
             else: # bg
-                image_mark_minion[i, j, :] = (0, 0, 0)
+                Imglist_output[n][i, j, :] = (0, 0, 0)
         print("Image No.",n+1,"Row", i+1)
 
     print("Finish No:" ,n+1)
-    Imglist_output[n] = image_mark_minion
+    # Imglist_output[n] = image_mark_minion
+    # img = Image.fromarray(image_mark_minion)
+    # img.save("duck_stats.jpg")
+
+# -----------------------------------------------Finish Method1
+"""
+# Method 2-----------------------------------------------
+minion_sample_head = Sample_Crop(Imglist[0], (70,367), (138,448))
+print("Positive Sample:",minion_sample_head.shape)
+solve_Img = Image.fromarray(minion_sample_head, mode="RGB")
+solve_Img.save("minion_sample_head.jpg")
+
+minion_sample_body = Sample_Crop(Imglist[0], (70,470), (128,530))
+print("Positive Sample:",minion_sample_body.shape)
+solve_Img = Image.fromarray(minion_sample_body, mode="RGB")
+solve_Img.save("minion_sample_body.jpg")
+
+bg_sample = Sample_Crop(Imglist[0], (470,460), (570,540))
+print("Negative Sample:",bg_sample.shape)
+solve_Img_Bg = Image.fromarray(bg_sample, mode="RGB")
+solve_Img_Bg.save("bg_sample.jpg")
+
+# train
+minion_sample_head = minion_sample_head.reshape(minion_sample_head.shape[0]*minion_sample_head.shape[1],3)
+trainP_head=np.cov(minion_sample_head,rowvar=False)
+cov_ctr=np.diag(np.diag(trainP_head))
+D_mean=minion_sample_head.mean(axis=0)
+rv_ctr=multivariate_normal(D_mean,cov_ctr,allow_singular=True)
+
+minion_sample_body = minion_sample_body.reshape(minion_sample_body.shape[0]*minion_sample_body.shape[1],3)
+trainP_body=np.cov(minion_sample_body,rowvar=False)
+cov_ctr_body=np.diag(np.diag(trainP_body))
+D_mean_body=minion_sample_body.mean(axis=0)
+rv_ctr_body=multivariate_normal(D_mean_body,cov_ctr_body,allow_singular=True)
+
+
+bg_sample = bg_sample.reshape(bg_sample.shape[0]*bg_sample.shape[1],3)
+tmp=np.cov(bg_sample,rowvar=False)
+cov=np.diag(np.diag(tmp))
+Bg_mean=bg_sample.mean(axis=0)
+rv=multivariate_normal(Bg_mean,cov,allow_singular=True)
+
+
+#-----
+
+# -----
+
+
+# image_mark_minion[i] = np.zeros(Imglist[0].shape, dtype=np.uint8)
+Imglist_output = Imglist.copy()
+
+for n in range(1):
+    for i in range(H): # H
+        for j in range(W): # W
+            ans = Imglist[n].copy()
+            if np.linalg.norm(ans[i, j] - D_mean) < np.linalg.norm(ans[i, j] - Bg_mean):
+                ans[i, j, 0] = 255
+                ans[i, j, 1] = 255
+                ans[i, j, 2] = 255
+            else:
+                ans[i, j, 0] = 0
+                ans[i, j, 1] = 0
+                ans[i, j, 2] = 0
+        print(i)
+    io.imshow(ans)
+    Imglist_output[n] = ans
+    print("Finish No:",n+1)
+    # Imglist_output[n] = image_mark_minion
     # img = Image.fromarray(image_mark_minion)
     # img.save("duck_stats.jpg")
 
 
+
+# Save image
 # create dir
 if not os.path.isdir("Output/"):
     os.makedirs("Output/")
