@@ -57,9 +57,15 @@ for i in range(N):
 """
 
 # Crop img
-def Sample_Crop(Bg_image_array, TL_local_tuple, LR_local_tuple):
-    (x1,y1) = TL_local_tuple
-    (x2,y2) = LR_local_tuple
+def sample_crop(Bg_image_array, UL_local_tuple, LR_local_tuple):
+    """
+    # parameter:
+    image                   the background image by numpy_array
+    UL_local_tuple          (x1,y1) the location of Upper Left Corner
+    LR_local_tuple          (x2,y2) the location of Lower Right Corner
+    """
+    (x1, y1) = UL_local_tuple
+    (x2, y2) = LR_local_tuple
     x1 = int(x1)
     x2 = int(x2)
     y1 = int(y1)
@@ -67,18 +73,19 @@ def Sample_Crop(Bg_image_array, TL_local_tuple, LR_local_tuple):
     image_crop_H = y2 - y1
     image_crop_W = x2 - x1
     sample_array = np.zeros((image_crop_H, image_crop_W, Bg_image_array.shape[2]), dtype=np.uint8)
-    for i in range(image_crop_H): # H
-        for j in range(image_crop_W): # W
-            sample_array[i][j] = Bg_image_array[i+y1][j+x1]
+    for i in range(image_crop_H):  # H
+        for j in range(image_crop_W):  # W
+            sample_array[i][j] = Bg_image_array[i + y1][j + x1]
     return sample_array
 
 
-minion_sample_head = Sample_Crop(Imglist[0], (70,367), (138,448))
+
+minion_sample_head = sample_crop(Imglist[0], (70,367), (138,448))
 print("Positive Sample:", minion_sample_head.shape)
 solve_Img = Image.fromarray(minion_sample_head, mode="RGB")
 solve_Img.save("minion_sample_head.jpg")
 
-minion_sample_body = Sample_Crop(Imglist[0], (70, 470), (128, 530))
+minion_sample_body = sample_crop(Imglist[0], (70, 470), (128, 530))
 print("Positive Sample:", minion_sample_body.shape)
 solve_Img = Image.fromarray(minion_sample_body, mode="RGB")
 solve_Img.save("minion_sample_body.jpg")
