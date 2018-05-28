@@ -14,23 +14,25 @@ from matplotlib import pyplot as plt
 
 # Load image
 SUPPORTED_EXTENSIONS = ["bmp", "png", "jpg", "jpeg"]
-def dataset_files(root):
-    #returns a list of all image files in the given directory
-    return list(itertools.chain.from_iterable(
-            glob.glob(os.path.join( root,"*.{}".format(ext) )  )
-            for ext in SUPPORTED_EXTENSIONS))
 
-#讀取目錄的DIR
+
+def dataset_files(root):
+    # returns a list of all image files in the given directory
+    return list(itertools.chain.from_iterable(
+        glob.glob(os.path.join(root, "*.{}".format(ext)))
+        for ext in SUPPORTED_EXTENSIONS))
+
+
+# 讀取目錄的DIR
 Imglist = dataset_files("originals/")
 N = len(Imglist)
-print("Image N",N)
-
+print("Image N", N)
 
 # to array
 for i in range(N):
     Imglist[i] = Image.open(Imglist[i])
     Imglist[i] = np.array(Imglist[i])
-    print("Original Image shape ",i+1,":",Imglist[i].shape)
+    print("Original Image shape ", i + 1, ":", Imglist[i].shape)
 
 '''
 image = Image.open("duck.jpg")
@@ -56,6 +58,7 @@ for i in range(N):
     print("Resize Image shape ",i+1,":",Imglist[i].shape)
 """
 
+
 # Crop img
 def sample_crop(Bg_image_array, UL_local_tuple, LR_local_tuple):
     """
@@ -79,8 +82,7 @@ def sample_crop(Bg_image_array, UL_local_tuple, LR_local_tuple):
     return sample_array
 
 
-
-minion_sample_head = sample_crop(Imglist[0], (70,367), (138,448))
+minion_sample_head = sample_crop(Imglist[0], (70, 367), (138, 448))
 print("Positive Sample:", minion_sample_head.shape)
 solve_Img = Image.fromarray(minion_sample_head, mode="RGB")
 solve_Img.save("minion_sample_head.jpg")
@@ -90,25 +92,24 @@ print("Positive Sample:", minion_sample_body.shape)
 solve_Img = Image.fromarray(minion_sample_body, mode="RGB")
 solve_Img.save("minion_sample_body.jpg")
 
-trainP_head = minion_sample_head.reshape(minion_sample_head.shape[0]*minion_sample_head.shape[1],3)
-print("trainP_head.Shape:",trainP_head.shape)
-trainP_body = minion_sample_body.reshape(minion_sample_body.shape[0]*minion_sample_body.shape[1],3)
-print("trainP_body.Shape:",trainP_body.shape)
+trainP_head = minion_sample_head.reshape(minion_sample_head.shape[0] * minion_sample_head.shape[1], 3)
+print("trainP_head.Shape:", trainP_head.shape)
+trainP_body = minion_sample_body.reshape(minion_sample_body.shape[0] * minion_sample_body.shape[1], 3)
+print("trainP_body.Shape:", trainP_body.shape)
 
 # create RGB range
 trainP_head_mean = trainP_head.mean(axis=0)
-trainP_head_std = np.std(trainP_head,axis=0)
-print("trainP_head_mean:",trainP_head_mean)
-print("trainP_head_std:",trainP_head_std)
+trainP_head_std = np.std(trainP_head, axis=0)
+print("trainP_head_mean:", trainP_head_mean)
+print("trainP_head_std:", trainP_head_std)
 
 trainP_body_mean = trainP_body.mean(axis=0)
-trainP_body_std = np.std(trainP_body,axis=0)
-print("trainP_body_mean:",trainP_body_mean)
-print("trainP_body_std:",trainP_body_std)
+trainP_body_std = np.std(trainP_body, axis=0)
+print("trainP_body_mean:", trainP_body_mean)
+print("trainP_body_std:", trainP_body_std)
 
 
-
-def mask_inrange(image ,lower, upper):
+def mask_inrange(image, lower, upper):
     # create 3 channels masks
     m = True
     for c in range(3):
@@ -119,14 +120,15 @@ def mask_inrange(image ,lower, upper):
             m = tmp_m & m
     return m
 
+
 # lower,upper = mean+- 1 std
 Parameter_K = 1.2
 RGBrange_head = [
     # lower     upper
-    (trainP_head_mean - Parameter_K * trainP_head_std, trainP_head_mean + Parameter_K * trainP_head_std)#head
+    (trainP_head_mean - Parameter_K * trainP_head_std, trainP_head_mean + Parameter_K * trainP_head_std)  # head
 ]
 RGBrange_body = [
-    (trainP_body_mean - Parameter_K*trainP_body_std, trainP_body_mean + Parameter_K*trainP_body_std)#body
+    (trainP_body_mean - Parameter_K * trainP_body_std, trainP_body_mean + Parameter_K * trainP_body_std)  # body
 ]
 
 """
@@ -136,12 +138,10 @@ solve_Img_Bg = Image.fromarray(bg_sample, mode="RGB")
 solve_Img_Bg.save("bg_sample.jpg")
 """
 
-
-
 # copy the list
 Imglist_output = Imglist[:]
 
-#Imglist_output[0]
+# Imglist_output[0]
 
 for n in range(N):
     ans = np.zeros(Imglist[0].shape, dtype=np.uint8)
@@ -164,15 +164,12 @@ for n in range(N):
     for i in range(H):
         for j in range(W):
     '''
-    
-    
+
     Imglist_output[n] = ans.copy()
-    print("Finish No:",n+1)
+    print("Finish No:", n + 1)
     # Imglist_output[n] = image_mark_minion
     # img = Image.fromarray(image_mark_minion)
     # img.save("duck_stats.jpg")
-
-
 
 # Save image
 # create dir

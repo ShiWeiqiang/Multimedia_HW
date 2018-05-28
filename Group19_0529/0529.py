@@ -5,7 +5,6 @@ import sys
 # this file is a test file
 
 
-"""
 # create Color R,G,B Range
 Color_Range = []
 Color_Diff = int(256 / 4)
@@ -18,7 +17,7 @@ for r in range(256):
 Color_Range = np.array(Color_Range)
 print(Color_Range.shape)
 # print(Color_Range)
-"""
+
 
 image = Image.open("test.jpg")
 W, H = image.size
@@ -49,6 +48,7 @@ def sample_crop(Bg_image_array, UL_local_tuple, LR_local_tuple):
     return sample_array
 
 
+# Method_1: Use the each R,G,B mean value of cube
 def image_cube(image_array, cube_size):
     """
     image_array: image by numpy array, dtype = numpy.uint8
@@ -78,7 +78,7 @@ def image_cube(image_array, cube_size):
         if w % cube_w == 0:
             cube_w_ruler.append(w)
 
-    print("set Cube size (cube_h,cube_w):",(cube_h,cube_w))
+    print("set Cube size (cube_h,cube_w):", (cube_h, cube_w))
     print("Cube_h_ruler:", cube_h_ruler)
     print("cube_w_ruler:", cube_w_ruler)
     """
@@ -92,8 +92,9 @@ def image_cube(image_array, cube_size):
     """
 
     cube_array = np.array([])
-    # TODO 找到每一個cube的mean 設定該位置的值
-    # for num_cube in range((int(image_h / cube_h) + 1)*(int(image_w / cube_w) + 1)):
+    # find the mean of each cube array, and set the R,G,B value of the new Image array
+    # for num_cube in range((int(image_h / cube_h) + 1)*(int(image_w / cube_w)
+    # + 1)):
     for mark_h in cube_h_ruler:  # h
         for mark_w in cube_w_ruler:  # w
             if mark_h == image_h or mark_w == image_w:
@@ -115,15 +116,51 @@ def image_cube(image_array, cube_size):
                 # use the mean of color to fill the cube size
                 for h in range(cube_h):
                     for w in range(cube_w):
-                        image_output[h+mark_h, w+mark_w] = cube_array_mean
+                        image_output[h + mark_h, w + mark_w] = cube_array_mean
                 """"""
-    #print(image_output.shape)
-    #image_output[0,0] = cube_array_mean
-    #print(image_output)
+    # print(image_output.shape)
+    # image_output[0,0] = cube_array_mean
+    # print(image_output)
     return image_output
+
+
+# Method_2: Use the close Color for each pixel
+
+
+def return_close_color(color_tuple):
+    # TODO find a better way to find suitable value
+    # for r in Color_Range[]
+
+    """Temporary solution"""
+    div_color = int(256 / 128)
+    r = color_tuple[0]
+    g = color_tuple[1]
+    b = color_tuple[2]
+    r = int(r / div_color + 0.5)
+    g = int(g / div_color + 0.5)
+    b = int(b / div_color + 0.5)
+    return [r * div_color, g * div_color, b * div_color]
+
+
+def use_close_color(image_array):
+    """
+    image_array: image by numpy array, dtype = numpy.uint8
+    RGB_range: RGB_range is a numpy array to save the KEY Color Value
+    :return:
+    """
+    for h in range(image_array.shape[0]):
+        for w in range(image_array.shape[1]):
+            image_array[h][w] = return_close_color(image_array[h][w][:])
+    return image_array
 
 
 # (h,w) cube_size
 img_output = image_cube(image_array, (12, 16))
 img = Image.fromarray(img_output)
-img.save("img_output.jpg")
+img.save("img_output_method1.jpg")
+
+img_output = use_close_color(image_array)
+img = Image.fromarray(img_output)
+img.save("img_output_method2.jpg")
+
+
