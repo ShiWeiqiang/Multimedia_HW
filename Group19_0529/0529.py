@@ -1,8 +1,7 @@
 import numpy as np
 from PIL import Image
 import sys
-
-# this file is a test file
+# 2018.05.29
 
 
 # create Color R,G,B Range
@@ -23,6 +22,10 @@ image = Image.open("test.jpg")
 W, H = image.size
 image_array = np.array(image)
 print("image shape:", image_array.shape)
+
+
+def gcd(m, n):
+    return m if n == 0 else gcd(n, m % n)
 
 
 def sample_crop(Bg_image_array, UL_local_tuple, LR_local_tuple):
@@ -46,6 +49,14 @@ def sample_crop(Bg_image_array, UL_local_tuple, LR_local_tuple):
         for j in range(image_crop_W):  # W
             sample_array[i][j] = Bg_image_array[i + y1][j + x1]
     return sample_array
+
+
+def cube_center_RGB(cube_array):
+    cube_h = cube_array.shape[0]
+    cube_w = cube_array.shape[1]
+    mid_h = int(cube_h/2)
+    mid_w = int(cube_w/2)
+    return cube_array[mid_h,mid_w]
 
 
 # Method_1: Use the each R,G,B mean value of cube
@@ -105,8 +116,10 @@ def image_cube(image_array, cube_size):
                 # print("location: UL(x1, y1):", (mark_w, mark_h), "DR(x2,y2):", (mark_w + cube_w, mark_h + cube_h))
 
                 cube_array = sample_crop(image_array, (mark_w, mark_h), (mark_w + cube_w, mark_h + cube_h))
+                cube_array_center = cube_center_RGB(cube_array)
                 cube_array = cube_array.reshape(cube_array.shape[0] * cube_array.shape[1], cube_array.shape[2])
                 cube_array_mean = cube_array.mean(axis=0)
+
                 '''
                 for h in range(cube_h):
                     for w in range(cube_w):
@@ -155,12 +168,15 @@ def use_close_color(image_array):
 
 
 # (h,w) cube_size
-img_output = image_cube(image_array, (12, 16))
+img_output = image_cube(image_array, (3, 4))
+for i in range(H):
+    for j in range(W):
+        image_array[i,j] = img_output[i,j]
 img = Image.fromarray(img_output)
 img.save("img_output_method1.jpg")
 
+image = Image.open("test.jpg")
+image_array = np.array(image)
 img_output = use_close_color(image_array)
 img = Image.fromarray(img_output)
 img.save("img_output_method2.jpg")
-
-
