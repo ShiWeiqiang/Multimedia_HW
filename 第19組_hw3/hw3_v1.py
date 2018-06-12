@@ -36,6 +36,11 @@ def find_nearest_center(pixel_RGB, pixel_Pos, centers):
     pixel_info = np.append(pixel_Pos, pixel_RGB)
     # return the most closed center
     for i in range(len(centers)):
+        h, w = pixel_Pos
+        h_center, w_center = centers[i][0], centers[i][1]
+        d = (h_center - h) ** 2 + (w_center - w) ** 2
+        if d > 0.3:
+            continue
         distance = np.linalg.norm(pixel_info - centers[i])
         if distance < mid_d:
             mid_d = distance
@@ -145,7 +150,7 @@ def fill_mask_color(img):
 img = io.imread("image1.jpg")
 img_H,img_W = img.shape[0],img.shape[1]
 # resize size must be multiple of 3
-img = resize(img, (900, 900), mode="reflect")
+img = resize(img, (150, 150), mode="reflect")
 
 # a list of RGB color 9*3
 # add a background RGB to Centers
